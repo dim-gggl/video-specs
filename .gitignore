@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.python-version
+.DS_Store
+.cursor
+.claude
+.codex
+.AGENTS
+AGENTS.md
+demo_output.*
+*.json
+*.xml
+*.html
+*.pyc
