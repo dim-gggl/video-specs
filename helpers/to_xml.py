@@ -43,6 +43,21 @@ def to_xml(specs: dict) -> str:
             elem = ET.SubElement(character, key.replace("_", "-"))
             elem.text = str(value)
 
+    # Dialogs
+    if "dialogs" in specs and specs["dialogs"]:
+        dialogs = ET.SubElement(root, "dialogs")
+        for line_data in specs["dialogs"]:
+            line = ET.SubElement(dialogs, "line")
+
+            char_elem = ET.SubElement(line, "character")
+            char_elem.text = str(line_data["character"])
+
+            emotion_elem = ET.SubElement(line, "emotion")
+            emotion_elem.text = str(line_data["emotion"])
+
+            content_elem = ET.SubElement(line, "content")
+            content_elem.text = str(line_data["content"])
+
     # Indentation
     ET.indent(root, space="  ")
     return ET.tostring(root, encoding="unicode", method="xml")

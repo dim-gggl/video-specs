@@ -45,6 +45,7 @@ class VideoSpecs:
             "camera_visuals": {},
             "scene_content": {},
             "characters": [],
+            "dialogs": [],
             "metadata": {
                 "created_at": datetime.now().isoformat(),
                 "tool_version": "1.0.0"
@@ -240,6 +241,44 @@ class VideoSpecs:
             if not add_more:
                 count -= 1
 
+    def collect_dialogs(self):
+        """Collecte les dialogues"""
+        banner("Dialogs")
+
+        if not self.specs["characters"]:
+            console.print("[yellow]Aucun personnage défini. Impossible d'ajouter des dialogues sans personnages.[/yellow]")
+            return
+
+        character_names = [c["name"] for c in self.specs["characters"]]
+        
+        # Demander si on veut ajouter des dialogues
+        if not Confirm.ask("\n[green]Voulez-vous ajouter des dialogues ?[/green]", default=True):
+            return
+
+        while True:
+            console.print(f"\n[cyan]Ligne de dialogue #{len(self.specs['dialogs']) + 1}[/cyan]")
+
+            console.print("\n[yellow3]Personnages disponibles:[/yellow3]", ", ".join(character_names))
+            character_id = Prompt.ask(
+                "Personnage",
+                choices=character_names
+            )
+
+            emotion = Prompt.ask("Émotion", default="neutral")
+            
+            content = Prompt.ask("Contenu")
+
+            line = {
+                "character": character_id,
+                "emotion": emotion,
+                "content": content
+            }
+
+            self.specs["dialogs"].append(line)
+
+            if not Confirm.ask("\n[green]Ajouter une autre ligne ?[/green]", default=True):
+                break
+
     def to_json(self) -> str:
         """Exporte en JSON formaté"""
         return json.dumps(self.specs, indent=2, ensure_ascii=True)
@@ -282,6 +321,17 @@ class VideoSpecs:
             for char in self.specs["characters"]:
                 char_table.add_row(char["name"], char["role"], char["age"])
             console.print(Align.center(char_table))
+
+        # Table dialogs
+        if self.specs["dialogs"]:
+            console.print()
+            dialog_table = Table(title="💬 Dialogs", box=box.SIMPLE)
+            dialog_table.add_column("Character", style="magenta")
+            dialog_table.add_column("Emotion", style="yellow3")
+            dialog_table.add_column("Content", style="white")
+            for line in self.specs["dialogs"]:
+                dialog_table.add_row(line["character"], line["emotion"], line["content"])
+            console.print(Align.center(dialog_table))
 
 
 @click.command()
@@ -348,6 +398,7 @@ def main(output, format, interactive):
         video.collect_camera_visuals()
         video.collect_scene_content()
         video.collect_characters()
+        video.collect_dialogs()
 
         # Afficher le résumé
         video.display_summary()
