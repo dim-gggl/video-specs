@@ -21,6 +21,7 @@ from cli.const import LOGO
 from cli.utils import banner, success_banner
 from helpers.to_html import to_html
 from helpers.to_xml import to_xml
+from helpers.to_text_blocks import to_text_blocks
 
 # Configuration rich-click pour un menu d'aide élégant
 click.rich_click.USE_RICH_MARKUP = True
@@ -67,27 +68,27 @@ class VideoSpecs:
         console.print("\n[yellow3]Ratios disponibles:[/yellow3]", ", ".join(aspect_ratios))
         aspect_ratio = Prompt.ask(
             "Aspect Ratio",
-            default="16:9"
+            default="9:16"
         )
 
         # Resolution
         console.print("\n[yellow3]Résolutions disponibles:[/yellow3]", ", ".join(resolutions))
         resolution = Prompt.ask(
             "Resolution",
-            default="1080p"
+            default="4K"
         )
 
         # Duration
         duration = Prompt.ask(
             "Duration (format HH:MM:SS)",
-            default="00:00:30"
+            default="00:00:15"
         )
 
         # Frame Rate
         console.print("\n[yellow3]Frame rates disponibles:[/yellow3]", ", ".join(frame_rates))
         frame_rate = Prompt.ask(
             "Frame Rate (fps)",
-            default="30"
+            default="25"
         )
 
         self.specs["technical"] = {
@@ -158,7 +159,7 @@ class VideoSpecs:
         lens_choice = Prompt.ask("Lens Choice", default="standard")
 
         console.print("\n[yellow3]Color palettes:[/yellow3]", ", ".join(color_palettes[:5]), "...")
-        color_palette = Prompt.ask("Color Palette", default="warm")
+        color_palette = Prompt.ask("Color Palette", default="neutral")
 
         self.specs["camera_visuals"] = {
             "shot_type": shot_type,
@@ -291,6 +292,10 @@ class VideoSpecs:
         """Exporte en HTML formaté"""
         return to_html(self.specs)
 
+    def to_text_blocks(self) -> str:
+        """Exporte en blocs de texte narratif"""
+        return to_text_blocks(self.specs)
+
     def display_summary(self):
         """Affiche un résumé des spécifications collectées"""
         console.clear()
@@ -338,11 +343,11 @@ class VideoSpecs:
 @click.option(
     "--output", "-o",
     type=click.Path(),
-    help="📁 Fichier de sortie (extension: .json, .xml, .html)"
+    help="📁 Fichier de sortie (extension: .json, .xml, .html, .txt)"
 )
 @click.option(
     "--format", "-f",
-    type=click.Choice(["json", "xml", "html"], case_sensitive=False),
+    type=click.Choice(["json", "xml", "html", "text-blocks"], case_sensitive=False),
     help="📋 Format de sortie (détecté automatiquement depuis l'extension si non spécifié)"
 )
 @click.option(
@@ -367,6 +372,7 @@ def main(output, format, interactive):
     • JSON (données structurées)
     • XML (format standard)
     • HTML (visualisation élégante)
+    • TEXT-BLOCKS (blocs narratifs)
 
     Exemples d'utilisation:
 
@@ -415,6 +421,8 @@ def main(output, format, interactive):
                     format = "xml"
                 elif ext == ".html":
                     format = "html"
+                elif ext == ".txt":
+                    format = "text-blocks"
                 else:
                     format = "json"  # Par défaut
         else:
@@ -422,7 +430,7 @@ def main(output, format, interactive):
             console.clear()
             format = Prompt.ask(
                 "Format de sortie",
-                choices=["json", "xml", "html"],
+                choices=["json", "xml", "html", "text-blocks"],
                 default="json"
             )
 
@@ -435,6 +443,8 @@ def main(output, format, interactive):
             output_data = video.to_xml()
         elif format == "html":
             output_data = video.to_html()
+        elif format == "text-blocks":
+            output_data = video.to_text_blocks()
 
         # Sauvegarder ou afficher
         if output:
