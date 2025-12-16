@@ -61,6 +61,10 @@ def to_text_blocks(specs: dict) -> str:
         tech_parts.append(tech["duration"])
     if tech.get("frame_rate"):
         tech_parts.append(tech["frame_rate"])
+    if tech.get("style"):
+        tech_parts.append(tech["style"])
+    if tech.get("genre"):
+        tech_parts.append(tech["genre"])
 
     if first_sentence_parts and tech_parts:
         scene_lines.append(f"{', '.join(first_sentence_parts)}, filmed in {', '.join(tech_parts)}.")

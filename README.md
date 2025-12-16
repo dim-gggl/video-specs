@@ -1,28 +1,39 @@
 # <div align="center"> video-specs
 
-Just a light CLI helper to organize your video idea into a JSON/XML/HTML formatted prompt.
+Fill a form about the specifications of the video you want to generate and get the whole video description formatted either in XML, in JSON, HTML or in Markdown text blocks.
 
 ## Pre requisites
 
-- Python 3.12+
+- Python 3.11+
 - `uv` is definitely recommended
 
 ## Quick Start
 
-### With `uv`
+### With `homebrew`:
 
 ```bash
-make install
-uv pip install -e .
+brew tap dim-gggl/brew
+brew install video-specs
+```
+
+### With `uv`
+
+1. Global installation
+
+```bash
+uv tool install video-specs
+```
+
+2. Local installation (venv)
+
+```bash
+uv add video-specs
 ```
 
 ### with `pip`
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install click rich rich-click
-pip install -e .
+pip install video-specs
 ```
 
 ## Start
@@ -31,7 +42,7 @@ pip install -e .
 video-specs
 ```
 
-This should lauch the interactive mode, otherwise you can start with a simple :
+This should launch the interactive mode, otherwise you can start with a simple :
 
 ```bash
 video-specs --help

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Video Specifications Tool - Outil interactif pour capturer les caractéristiques d'une vidéo
+Video Specifications Tool - Interactive tool to capture the characteristics of a video
 """
 import json
 
@@ -23,21 +23,21 @@ from helpers.to_html import to_html
 from helpers.to_xml import to_xml
 from helpers.to_text_blocks import to_text_blocks
 
-# Configuration rich-click pour un menu d'aide élégant
+# Configuration rich-click for a elegant help menu
 click.rich_click.USE_RICH_MARKUP = True
 click.rich_click.USE_MARKDOWN = True
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.GROUP_ARGUMENTS_OPTIONS = True
 click.rich_click.STYLE_ERRORS_SUGGESTION = "magenta italic"
-click.rich_click.ERRORS_SUGGESTION = "Essayez 'video-specs --help' pour plus d'informations."
-click.rich_click.STYLE_OPTION = "bold cyan"
-click.rich_click.STYLE_SWITCH = "bold green"
+click.rich_click.ERRORS_SUGGESTION = "Try 'video-specs --help' for more information."
+click.rich_click.STYLE_OPTION = "bold blue_violet"
+click.rich_click.STYLE_SWITCH = "bold yellow3"
 
 console = Console()
 
 
 class VideoSpecs:
-    """Classe pour gérer les spécifications vidéo"""
+    """Class to manage the video specifications"""
 
     def __init__(self):
         self.specs = {
@@ -54,25 +54,27 @@ class VideoSpecs:
         }
 
     def collect_technical_specs(self):
-        """Collecte les spécifications techniques"""
+        """Collect the technical specifications"""
         console.clear()
         console.print(LOGO)
-        console.input("Appuyez sur Entrée pour continuer...")
+        console.input("Press Enter to continue...")
         banner("Technical Specifications")
 
         aspect_ratios = ["16:9", "9:16", "4:3", "1:1", "2.35:1", "2.39:1", "21:9", "18:9"]
         resolutions = ["4K (3840×2160)", "2K (2048×1080)", "1080p", "720p", "480p", "360p"]
         frame_rates = ["15", "24", "25", "30", "60", "120"]
+        styles = ["cinematic", "documentary", "music video", "commercial", "trailer", "interview", "behind the scenes", "viral"]
+        genres = ["action", "adventure", "comedy", "drama", "horror", "romance", "sci-fi", "thriller", "western"]
 
         # Aspect Ratio
-        console.print("\n[yellow3]Ratios disponibles:[/yellow3]", ", ".join(aspect_ratios))
+        console.print("\n[yellow3]Ratios available:[/yellow3]", ", ".join(aspect_ratios))
         aspect_ratio = Prompt.ask(
             "Aspect Ratio",
             default="9:16"
         )
 
         # Resolution
-        console.print("\n[yellow3]Résolutions disponibles:[/yellow3]", ", ".join(resolutions))
+        console.print("\n[yellow3]Resolutions available:[/yellow3]", ", ".join(resolutions))
         resolution = Prompt.ask(
             "Resolution",
             default="4K"
@@ -85,21 +87,31 @@ class VideoSpecs:
         )
 
         # Frame Rate
-        console.print("\n[yellow3]Frame rates disponibles:[/yellow3]", ", ".join(frame_rates))
+        console.print("\n[yellow3]Frame rates available:[/yellow3]", ", ".join(frame_rates))
         frame_rate = Prompt.ask(
             "Frame Rate (fps)",
             default="25"
         )
 
+        # Style
+        console.print("\n[yellow3]Styles available:[/yellow3]", ", ".join(styles))
+        style = Prompt.ask("Style", default="documentary")
+
+        # Genre
+        console.print("\n[yellow3]Genres disponibles:[/yellow3]", ", ".join(genres))
+        genre = Prompt.ask("Genre", default="comedy")
+
         self.specs["technical"] = {
             "aspect_ratio": aspect_ratio,
             "resolution": resolution,
             "duration": duration,
-            "frame_rate": f"{frame_rate} fps"
+            "frame_rate": f"{frame_rate} fps",
+            "style": style,
+            "genre": genre
         }
 
     def collect_setting_atmosphere(self):
-        """Collecte les paramètres de décor et atmosphère"""
+        """Collect the parameters of the setting and atmosphere"""
         banner("Setting & Atmosphere")
         times_of_day = ["morning", "afternoon", "evening", "night", "midnight", "dawn", "dusk", "golden hour"]
         seasons = ["spring", "summer", "autumn", "winter"]
@@ -137,7 +149,7 @@ class VideoSpecs:
         }
 
     def collect_camera_visuals(self):
-        """Collecte les paramètres de caméra et visuels"""
+        """Collect the parameters of the camera and visuals"""
         banner("Camera & Visuals")
 
         shot_types = ["close-up", "medium shot", "wide shot", "extreme close-up", "full shot", "over-the-shoulder", "POV", "establishing shot"]
@@ -170,7 +182,7 @@ class VideoSpecs:
         }
 
     def collect_scene_content(self):
-        """Collecte le contenu de la scène"""
+        """Collect the content of the scene"""
         banner("Scene Content")
 
         crowd_densities = ["empty", "sparse", "moderate", "crowded", "packed"]
@@ -197,18 +209,18 @@ class VideoSpecs:
         }
 
     def collect_characters(self):
-        """Collecte les informations sur les personnages"""
+        """Collect the information about the characters"""
         banner("Characters")
 
         roles = ["protagonist", "antagonist", "supporting", "extra", "narrator", "sidekick"]
 
         count = 1
         while count > 0:
-            console.print(f"\n[cyan]Personnage #{len(self.specs['characters']) + 1}[/cyan]")
+            console.print(f"\n[cyan]Character #{len(self.specs['characters']) + 1}[/cyan]")
 
             name = Prompt.ask("Name", default=f"Character {len(self.specs['characters']) + 1}")
 
-            console.print("\n[yellow3]Roles disponibles:[/yellow3]", ", ".join(roles))
+            console.print("\n[yellow3]Roles available:[/yellow3]", ", ".join(roles))
             role = Prompt.ask("Role", default="protagonist")
 
             age = Prompt.ask("Age", default="30")
@@ -220,7 +232,7 @@ class VideoSpecs:
 
             physical_appearance = Prompt.ask(
                 "Physical Appearance",
-                default="Average height, brown hair"
+                default="Average height, brown hair, blue eyes"
             )
 
             character = {
@@ -233,9 +245,9 @@ class VideoSpecs:
 
             self.specs["characters"].append(character)
 
-            # Demander si on ajoute un autre personnage
+            # Ask if we want to add another character
             add_more = Confirm.ask(
-                "\n[green]Ajouter un autre personnage ?[/green]",
+                "\n[green]Add another character ?[/green]",
                 default=False
             )
 
@@ -243,31 +255,31 @@ class VideoSpecs:
                 count -= 1
 
     def collect_dialogs(self):
-        """Collecte les dialogues"""
+        """Collect the dialogs"""
         banner("Dialogs")
 
         if not self.specs["characters"]:
-            console.print("[yellow]Aucun personnage défini. Impossible d'ajouter des dialogues sans personnages.[/yellow]")
+            console.print("[yellow]No characters defined. Impossible to add dialogs without characters.[/yellow]")
             return
 
         character_names = [c["name"] for c in self.specs["characters"]]
         
-        # Demander si on veut ajouter des dialogues
-        if not Confirm.ask("\n[green]Voulez-vous ajouter des dialogues ?[/green]", default=True):
+        # Ask if we want to add dialogs
+        if not Confirm.ask("\n[green]Do you want to add dialogs ?[/green]", default=True):
             return
 
         while True:
-            console.print(f"\n[cyan]Ligne de dialogue #{len(self.specs['dialogs']) + 1}[/cyan]")
+            console.print(f"\n[cyan]Dialog line #{len(self.specs['dialogs']) + 1}[/cyan]")
 
-            console.print("\n[yellow3]Personnages disponibles:[/yellow3]", ", ".join(character_names))
+            console.print("\n[yellow3]Characters available:[/yellow3]", ", ".join(character_names))
             character_id = Prompt.ask(
-                "Personnage",
+                "Character",
                 choices=character_names
             )
 
-            emotion = Prompt.ask("Émotion", default="neutral")
+            emotion = Prompt.ask("Emotion", default="neutral")
             
-            content = Prompt.ask("Contenu")
+            content = Prompt.ask("Content")
 
             line = {
                 "character": character_id,
@@ -277,34 +289,34 @@ class VideoSpecs:
 
             self.specs["dialogs"].append(line)
 
-            if not Confirm.ask("\n[green]Ajouter une autre ligne ?[/green]", default=True):
+            if not Confirm.ask("\n[green]Add another line ?[/green]", default=True):
                 break
 
     def to_json(self) -> str:
-        """Exporte en JSON formaté"""
+        """Export to JSON formatted"""
         return json.dumps(self.specs, indent=2, ensure_ascii=True)
 
     def to_xml(self) -> str:
-        """Exporte en XML formaté"""
+        """Export to XML formatted"""
         return to_xml(self.specs)
 
     def to_html(self) -> str:
-        """Exporte en HTML formaté"""
+        """Export to HTML formatted"""
         return to_html(self.specs)
 
     def to_text_blocks(self) -> str:
-        """Exporte en blocs de texte narratif"""
+        """Export to narrative text blocks"""
         return to_text_blocks(self.specs)
 
     def display_summary(self):
-        """Affiche un résumé des spécifications collectées"""
+        """Display a summary of the collected specifications"""
         console.clear()
-        success_banner("Collecte terminée !")
+        success_banner("Collection completed!")
         console.input()
         console.clear()
 
 
-        # Table technique
+        # Table of technical specifications
         table = Table(
             title="📹 Technical Specs", 
             box=box.SIMPLE, 
@@ -316,7 +328,7 @@ class VideoSpecs:
             table.add_row(key.replace("_", " ").title(), str(value))
         console.print(Align.center(table))
 
-        # Table characters
+        # Table of characters
         if self.specs["characters"]:
             console.print()
             char_table = Table(title="👥 Characters", box=box.SIMPLE)
@@ -327,7 +339,7 @@ class VideoSpecs:
                 char_table.add_row(char["name"], char["role"], char["age"])
             console.print(Align.center(char_table))
 
-        # Table dialogs
+        # Table of dialogs
         if self.specs["dialogs"]:
             console.print()
             dialog_table = Table(title="💬 Dialogs", box=box.SIMPLE)
@@ -343,60 +355,46 @@ class VideoSpecs:
 @click.option(
     "--output", "-o",
     type=click.Path(),
-    help="📁 Fichier de sortie (extension: .json, .xml, .html, .txt)"
+    help="📁 Output file (extension: .json, .xml, .html, .txt)"
 )
 @click.option(
     "--format", "-f",
     type=click.Choice(["json", "xml", "html", "text-blocks"], case_sensitive=False),
-    help="📋 Format de sortie (détecté automatiquement depuis l'extension si non spécifié)"
+    help="📋 Output format (detected automatically from the extension if not specified)"
 )
 @click.option(
     "--interactive/--no-interactive", "-i/-n",
     default=True,
-    help="🖱️  Mode interactif (par défaut) ou non-interactif"
+    help="🖱️  Interactive mode (default) or non-interactive"
 )
 def main(output, format, interactive):
     """
     Video Specifications Tool
 
-    Outil interactif pour capturer toutes les caractéristiques d'une vidéo.
+    Interactive tool to capture all the characteristics of a video.
 
-    Catégories disponibles:
-    • Technical (aspect ratio, resolution, duration, frame rate)
-    • Setting & Atmosphere (time, season, weather, location)
-    • Camera & Visuals (shot type, movement, focus, lens)
-    • Scene Content (crowd, subjects, mood, action)
-    • Characters (illimité, avec nom, rôle, âge, costume, apparence)
+    Examples of usage:
 
-    Formats d'export:
-    • JSON (données structurées)
-    • XML (format standard)
-    • HTML (visualisation élégante)
-    • TEXT-BLOCKS (blocs narratifs)
-
-    Exemples d'utilisation:
-
-        Mode interactif (par défaut)
-        video-specs
-
-        Sauvegarder en JSON:
+        Save in JSON:
         video-specs -o video.json
 
-        Sauvegarder en XML:
+        Save in XML:
         video-specs -o specs.xml
 
-        Sauvegarder en HTML (avec visualisation):
+        Save in HTML (with visualization):
         video-specs -o report.html
     """
     console.clear()
     console.print(LOGO)
 
     if not interactive:
-        console.print("Mode non-interactif non encore implémenté")
+        console.print("Non-interactive mode not yet implemented")
         return
 
-    # Collecte des données
+    # Collect the data
     video = VideoSpecs()
+
+    console_width = console.size.width    
 
     try:
         video.collect_technical_specs()
@@ -406,14 +404,14 @@ def main(output, format, interactive):
         video.collect_characters()
         video.collect_dialogs()
 
-        # Afficher le résumé
+        # Display the summary
         video.display_summary()
 
-        # Déterminer le format de sortie
+        # Determine the output format
         if output:
             output_path = Path(output)
             if not format:
-                # Détecter depuis l'extension
+                # Detect from the extension
                 ext = output_path.suffix.lower()
                 if ext == ".json":
                     format = "json"
@@ -421,21 +419,19 @@ def main(output, format, interactive):
                     format = "xml"
                 elif ext == ".html":
                     format = "html"
-                elif ext == ".txt":
-                    format = "text-blocks"
                 else:
-                    format = "json"  # Par défaut
+                    format = "text-blocks"  # Default
         else:
-            # Demander le format si pas de fichier de sortie
+            # Ask for the format if no output file
             console.clear()
             format = Prompt.ask(
-                "Format de sortie",
+                "Output format",
                 choices=["json", "xml", "html", "text-blocks"],
-                default="json"
+                default="text-blocks"
             )
 
-        # Générer la sortie
-        console.print(f"\n[cyan]Génération du fichier {format.upper()}...[/cyan]")
+        # Generate the output
+        console.print(f"\n[cyan]Generating {format.upper()}...[/cyan]")
 
         if format == "json":
             output_data = video.to_json()
@@ -446,24 +442,24 @@ def main(output, format, interactive):
         elif format == "text-blocks":
             output_data = video.to_text_blocks()
 
-        # Sauvegarder ou afficher
+        # Save or display
         if output:
             output_path.write_text(output_data, encoding="utf-8")
-            console.print(f"\n[green]✓ Fichier sauvegardé:[/green] {output_path}")
+            console.print(f"\n[green]✓ File saved:[/green] {output_path}")
         else:
-            console.print("\n" + "=" * 80)
+            console.print("\n" + "=" * console_width)
             console.print(output_data)
-            console.print("=" * 80)
+            console.print("=" * console_width)
 
-            # Proposer de sauvegarder
-            if Confirm.ask("\n[yellow3]Sauvegarder dans un fichier ?[/yellow3]", default=True):
+            # Propose to save
+            if Confirm.ask("\n[yellow3]Save in a file ?[/yellow3]", default=True):
                 default_name = f"video_specs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format}"
-                filename = Prompt.ask("Nom du fichier", default=default_name)
+                filename = Prompt.ask("File name", default=default_name)
                 Path(filename).write_text(output_data, encoding="utf-8")
-                console.print(f"[green]✓ Fichier sauvegardé:[/green] {filename}")
+                console.print(f"[green]✓ File saved:[/green] {filename}")
 
     except KeyboardInterrupt:
-        console.print("\n[yellow3]Annulé par l'utilisateur[/yellow3]")
+        console.print("\n[yellow3]Cancelled by the user[/yellow3]")
         return
 
 
