@@ -22,6 +22,12 @@ from cli.utils import banner, success_banner
 from helpers.to_html import to_html
 from helpers.to_xml import to_xml
 from helpers.to_text_blocks import to_text_blocks
+from helpers.converter import (
+    convert_format,
+    convert_to_all,
+    save_converted_files,
+    detect_format
+)
 
 # Configuration rich-click for a elegant help menu
 click.rich_click.USE_RICH_MARKUP = True
@@ -351,7 +357,20 @@ class VideoSpecs:
             console.print(Align.center(dialog_table))
 
 
-@click.command()
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """
+    Video Specifications Tool
+
+    Interactive tool to capture all the characteristics of a video.
+    """
+    # If no subcommand is provided, run the create command by default
+    if ctx.invoked_subcommand is None:
+        ctx.invoke(create)
+
+
+@cli.command()
 @click.option(
     "--output", "-o",
     type=click.Path(),
@@ -367,7 +386,7 @@ class VideoSpecs:
     default=True,
     help="🖱️  Interactive mode (default) or non-interactive"
 )
-def main(output, format, interactive):
+def create(output, format, interactive):
     """
     Video Specifications Tool
 
@@ -443,9 +462,11 @@ def main(output, format, interactive):
             output_data = video.to_text_blocks()
 
         # Save or display
+        saved_file_path = None
         if output:
             output_path.write_text(output_data, encoding="utf-8")
             console.print(f"\n[green]✓ File saved:[/green] {output_path}")
+            saved_file_path = output_path
         else:
             console.print("\n" + "=" * console_width)
             console.print(output_data)
@@ -455,12 +476,197 @@ def main(output, format, interactive):
             if Confirm.ask("\n[yellow3]Save in a file ?[/yellow3]", default=True):
                 default_name = f"video_specs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{format}"
                 filename = Prompt.ask("File name", default=default_name)
-                Path(filename).write_text(output_data, encoding="utf-8")
+                saved_file_path = Path(filename)
+                saved_file_path.write_text(output_data, encoding="utf-8")
                 console.print(f"[green]✓ File saved:[/green] {filename}")
+
+        # Offer format conversion
+        if saved_file_path:
+            console.print()
+            if Confirm.ask("[cyan]Convert to other formats?[/cyan]", default=False):
+                # Show conversion menu
+                console.print("\n[bold]Available conversions:[/bold]")
+                console.print("  1. XML")
+                console.print("  2. HTML")
+                console.print("  3. Text-blocks")
+                console.print("  4. All formats")
+                console.print("  5. Skip")
+
+                choice = Prompt.ask(
+                    "\nChoice",
+                    choices=["1", "2", "3", "4", "5"],
+                    default="5"
+                )
+
+                if choice != "5":
+                    format_map = {
+                        "1": ["xml"],
+                        "2": ["html"],
+                        "3": ["text-blocks"],
+                        "4": ["json", "xml", "html", "text-blocks"]
+                    }
+
+                    # Remove current format from conversion list
+                    target_formats = [f for f in format_map[choice] if f != format]
+
+                    if target_formats:
+                        console.print(f"\n[cyan]Converting to {', '.join(target_formats)}...[/cyan]")
+
+                        try:
+                            # Prepare specs dict for conversion
+                            ext_map = {'json': '.json', 'xml': '.xml', 'html': '.html', 'text-blocks': '.txt'}
+
+                            for target_format in target_formats:
+                                # Convert using the video object's methods
+                                if target_format == "json":
+                                    converted_content = video.to_json()
+                                elif target_format == "xml":
+                                    converted_content = video.to_xml()
+                                elif target_format == "html":
+                                    converted_content = video.to_html()
+                                elif target_format == "text-blocks":
+                                    converted_content = video.to_text_blocks()
+
+                                # Save converted file
+                                target_ext = ext_map[target_format]
+                                target_path = saved_file_path.parent / f"{saved_file_path.stem}{target_ext}"
+                                target_path.write_text(converted_content, encoding="utf-8")
+                                console.print(f"[green]✓ Saved:[/green] {target_path}")
+
+                        except Exception as e:
+                            console.print(f"[red]Conversion error:[/red] {e}")
+                    else:
+                        console.print("[yellow]No additional formats to convert (already in current format)[/yellow]")
 
     except KeyboardInterrupt:
         console.print("\n[yellow3]Cancelled by the user[/yellow3]")
         return
+
+
+@cli.command()
+@click.argument('input_file', type=click.Path(exists=True))
+@click.option(
+    "--to", "-t",
+    "target_formats",
+    multiple=True,
+    type=click.Choice(["json", "xml", "html", "text-blocks", "all"], case_sensitive=False),
+    help="🎯 Target format(s) for conversion. Use 'all' to convert to all formats. Can be specified multiple times."
+)
+@click.option(
+    "--output", "-o",
+    type=click.Path(),
+    help="📁 Output directory or file path (directory for 'all', file for single format)"
+)
+@click.option(
+    "--from", "-f",
+    "from_format",
+    type=click.Choice(["json", "xml", "html", "text-blocks"], case_sensitive=False),
+    help="📋 Source format (auto-detected if not specified)"
+)
+def convert(input_file, target_formats, output, from_format):
+    """
+    Convert video specifications between formats.
+
+    INPUT_FILE: Path to the input file to convert
+
+    Examples:
+
+        Convert JSON to XML:
+        video-specs convert specs.json --to xml
+
+        Convert to multiple formats:
+        video-specs convert specs.json --to xml --to html
+
+        Convert to all formats:
+        video-specs convert specs.json --to all
+
+        Specify output location:
+        video-specs convert specs.json --to all -o ./output
+    """
+    console.clear()
+    console.print(Panel.fit(
+        "[bold cyan]Format Converter[/bold cyan]\n"
+        "Convert video specifications between formats",
+        border_style="cyan"
+    ))
+
+    input_path = Path(input_file)
+
+    try:
+        # Detect source format if not specified
+        if from_format is None:
+            from_format = detect_format(input_path)
+            console.print(f"\n[dim]Detected source format: {from_format}[/dim]")
+
+        # Handle no target format specified
+        if not target_formats:
+            console.print("\n[yellow]No target format specified. Please use --to option.[/yellow]")
+            console.print("Example: video-specs convert input.json --to xml")
+            return
+
+        # Check if 'all' is in target formats
+        if 'all' in target_formats:
+            console.print(f"\n[cyan]Converting {input_path.name} to all formats...[/cyan]")
+
+            # Convert to all formats
+            results = convert_to_all(input_path, from_format)
+
+            # Determine output directory
+            if output:
+                output_dir = Path(output)
+                if output_dir.suffix:
+                    # User provided a file path, use its directory
+                    output_dir = output_dir.parent
+            else:
+                output_dir = input_path.parent
+
+            # Save files
+            base_name = input_path.stem
+            created_files = save_converted_files(results, base_name, output_dir)
+
+            # Display results
+            console.print(f"\n[green]✓ Conversion completed![/green]")
+            console.print("\n[bold]Created files:[/bold]")
+            for file_path in created_files:
+                console.print(f"  • {file_path}")
+
+        else:
+            # Convert to specific format(s)
+            for target_format in target_formats:
+                console.print(f"\n[cyan]Converting {input_path.name} from {from_format} to {target_format}...[/cyan]")
+
+                # Convert
+                output_content = convert_format(input_path, from_format, target_format)
+
+                # Determine output path
+                if output:
+                    output_path = Path(output)
+                    # If converting to multiple formats and output is a directory
+                    if len(target_formats) > 1 and output_path.is_dir():
+                        ext_map = {'json': '.json', 'xml': '.xml', 'html': '.html', 'text-blocks': '.txt'}
+                        output_path = output_path / f"{input_path.stem}{ext_map[target_format]}"
+                else:
+                    # Auto-generate output path
+                    ext_map = {'json': '.json', 'xml': '.xml', 'html': '.html', 'text-blocks': '.txt'}
+                    output_path = input_path.parent / f"{input_path.stem}{ext_map[target_format]}"
+
+                # Save file
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_path.write_text(output_content, encoding='utf-8')
+
+                console.print(f"[green]✓ Saved:[/green] {output_path}")
+
+    except ValueError as e:
+        console.print(f"\n[red]Error:[/red] {e}")
+        return
+    except Exception as e:
+        console.print(f"\n[red]Unexpected error:[/red] {e}")
+        return
+
+
+def main():
+    """Entry point for the CLI."""
+    cli()
 
 
 if __name__ == "__main__":
