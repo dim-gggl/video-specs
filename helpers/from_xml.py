@@ -37,13 +37,6 @@ def from_xml(xml_data: str) -> Dict[str, Any]:
         }
     }
 
-    # Parse Metadata
-    metadata_elem = root.find("Metadata")
-    if metadata_elem is not None:
-        for child in metadata_elem:
-            key = child.tag.replace("-", "_")
-            specs["metadata"][key] = child.text or ""
-
     # Parse Technical
     technical_elem = root.find("Technical")
     if technical_elem is not None:

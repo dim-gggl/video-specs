@@ -196,11 +196,8 @@ def to_html(specs: dict) -> str:
             html += "                </div>\n"
         html += "            </div>\n"
 
-    # Footer with metadata
+    # Footer
     html += f"""
-    </div>
-    <div class="metadata">
-        Created on {specs['metadata']['created_at']} | Tool v{specs['metadata']['tool_version']}
     </div>
 </div>
 </body>

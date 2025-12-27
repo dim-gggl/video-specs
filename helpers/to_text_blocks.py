@@ -210,8 +210,12 @@ def to_text_blocks(specs: dict) -> str:
         cinematography_lines.append(sentence + '.')
 
     # Second sentence: mood description
-    if scene.get("mood_tone"):
-        mood_line = f"The mood shifts from playful and {scene['mood_tone']} to dark, violent and oppressive as the argument escalates and the party turns into a massacre."
+    mood_tones = scene.get("mood_tone")
+    if isinstance(mood_tones, list):
+        mood_line = f"The mood is mixing {', '.join(mood_tones[:-1])} and {mood_tones[-1]}."
+    elif isinstance(mood_tones, str):
+        mood_line = f"The mood is {mood_tones}."
+    if mood_line:
         cinematography_lines.append(mood_line)
 
     if cinematography_lines:

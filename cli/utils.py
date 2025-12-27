@@ -7,7 +7,7 @@ from rich.text import Text
 console = Console()
 
 
-def banner(message: str, success: bool = False) -> Align:
+def banner(message: str, success: bool = False):
 	style = "bold blue_violet" if not success else "bold green"
 	border_style = "yellow3" if not success else "green"
 	console.clear()

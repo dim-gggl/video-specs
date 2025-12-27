@@ -5,12 +5,6 @@ def to_xml(specs: dict) -> str:
     """Exporte en XML formaté"""
     root = ET.Element("VideoSpecifications")
 
-    # Metadata
-    metadata = ET.SubElement(root, "Metadata")
-    for key, value in specs["metadata"].items():
-        elem = ET.SubElement(metadata, key.replace("_", "-"))
-        elem.text = str(value)
-
     # Technical
     technical = ET.SubElement(root, "Technical")
     for key, value in specs["technical"].items():

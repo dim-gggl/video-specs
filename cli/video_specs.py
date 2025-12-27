@@ -8,12 +8,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
 
-import click
+
 import rich_click as click
 from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Prompt, Confirm
+from rich.syntax import Syntax
 from rich.table import Table
 from rich import box
 
@@ -29,9 +30,7 @@ from helpers.converter import (
     detect_format
 )
 
-# Configuration rich-click for a elegant help menu
 click.rich_click.USE_RICH_MARKUP = True
-click.rich_click.USE_MARKDOWN = True
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.GROUP_ARGUMENTS_OPTIONS = True
 click.rich_click.STYLE_ERRORS_SUGGESTION = "magenta italic"
@@ -52,11 +51,7 @@ class VideoSpecs:
             "camera_visuals": {},
             "scene_content": {},
             "characters": [],
-            "dialogs": [],
-            "metadata": {
-                "created_at": datetime.now().isoformat(),
-                "tool_version": "1.0.0"
-            }
+            "dialogs": []
         }
 
     def collect_technical_specs(self):
@@ -69,8 +64,23 @@ class VideoSpecs:
         aspect_ratios = ["16:9", "9:16", "4:3", "1:1", "2.35:1", "2.39:1", "21:9", "18:9"]
         resolutions = ["4K (3840×2160)", "2K (2048×1080)", "1080p", "720p", "480p", "360p"]
         frame_rates = ["15", "24", "25", "30", "60", "120"]
-        styles = ["cinematic", "documentary", "music video", "commercial", "trailer", "interview", "behind the scenes", "viral"]
-        genres = ["action", "adventure", "comedy", "drama", "horror", "romance", "sci-fi", "thriller", "western"]
+        styles = ["cinematic", 
+                  "documentary", 
+                  "music video", 
+                  "commercial", 
+                  "trailer", 
+                  "interview", 
+                  "behind the scenes", 
+                  "viral"]
+        genres = ["action", 
+                  "adventure", 
+                  "comedy", 
+                  "drama", 
+                  "horror", 
+                  "romance", 
+                  "sci-fi", 
+                  "thriller", 
+                  "western"]
 
         # Aspect Ratio
         console.print("\n[yellow3]Ratios available:[/yellow3]", ", ".join(aspect_ratios))
@@ -158,25 +168,40 @@ class VideoSpecs:
         """Collect the parameters of the camera and visuals"""
         banner("Camera & Visuals")
 
-        shot_types = ["close-up", "medium shot", "wide shot", "extreme close-up", "full shot", "over-the-shoulder", "POV", "establishing shot"]
-        camera_movements = ["static", "pan", "tilt", "dolly", "tracking", "handheld", "crane", "steadicam", "drone"]
+        shot_types = ["close-up", 
+                      "medium shot", 
+                      "wide shot", 
+                      "extreme close-up", 
+                      "full shot", 
+                      "over-the-shoulder", 
+                      "POV", 
+                      "establishing shot"]
+        camera_movements = ["static", 
+                            "pan", 
+                            "tilt", 
+                            "dolly", 
+                            "tracking", 
+                            "handheld", 
+                            "crane", 
+                            "steadicam", 
+                            "drone"]
         focus_types = ["shallow depth of field", "deep focus", "rack focus", "soft focus", "selective focus"]
         lens_choices = ["wide-angle", "telephoto", "standard", "fisheye", "macro", "anamorphic"]
         color_palettes = ["warm", "cool", "monochrome", "vibrant", "desaturated", "pastel", "neon", "earth tones"]
 
-        console.print("\n[yellow3]Shot types:[/yellow3]", ", ".join(shot_types[:5]), "...")
+        console.print("\n[yellow3]Shot types:[/yellow3]", ", ".join(shot_types), "...")
         shot_type = Prompt.ask("Shot Type", default="medium shot")
 
-        console.print("\n[yellow3]Camera movements:[/yellow3]", ", ".join(camera_movements[:5]), "...")
+        console.print("\n[yellow3]Camera movements:[/yellow3]", ", ".join(camera_movements), "...")
         camera_movement = Prompt.ask("Camera Movement", default="static")
 
-        console.print("\n[yellow3]Focus types:[/yellow3]", ", ".join(focus_types[:3]), "...")
+        console.print("\n[yellow3]Focus types:[/yellow3]", ", ".join(focus_types), "...")
         focus = Prompt.ask("Focus", default="shallow depth of field")
 
         console.print("\n[yellow3]Lens choices:[/yellow3]", ", ".join(lens_choices))
         lens_choice = Prompt.ask("Lens Choice", default="standard")
 
-        console.print("\n[yellow3]Color palettes:[/yellow3]", ", ".join(color_palettes[:5]), "...")
+        console.print("\n[yellow3]Color palettes:[/yellow3]", ", ".join(color_palettes), "...")
         color_palette = Prompt.ask("Color Palette", default="neutral")
 
         self.specs["camera_visuals"] = {
@@ -199,7 +224,7 @@ class VideoSpecs:
 
         subject_count = Prompt.ask("Subject Count", default="1")
 
-        console.print("\n[yellow3]Moods/Tones:[/yellow3]", ", ".join(moods[:5]), "...")
+        console.print("\n[yellow3]Moods/Tones:[/yellow3]", ", ".join(moods), "...")
         mood = Prompt.ask("Mood / Tone", default="peaceful")
 
         action_description = Prompt.ask(
@@ -238,7 +263,7 @@ class VideoSpecs:
 
             physical_appearance = Prompt.ask(
                 "Physical Appearance",
-                default="Average height, brown hair, blue eyes"
+                default="Average looking"
             )
 
             character = {
@@ -300,7 +325,7 @@ class VideoSpecs:
 
     def to_json(self) -> str:
         """Export to JSON formatted"""
-        return json.dumps(self.specs, indent=2, ensure_ascii=True)
+        return json.dumps(self.specs, indent=4, ensure_ascii=True)
 
     def to_xml(self) -> str:
         """Export to XML formatted"""
@@ -324,7 +349,7 @@ class VideoSpecs:
 
         # Table of technical specifications
         table = Table(
-            title="📹 Technical Specs", 
+            title="Technical Specs", 
             box=box.SIMPLE, 
             show_header=False
         )
@@ -337,7 +362,7 @@ class VideoSpecs:
         # Table of characters
         if self.specs["characters"]:
             console.print()
-            char_table = Table(title="👥 Characters", box=box.SIMPLE)
+            char_table = Table(title="Characters", box=box.SIMPLE)
             char_table.add_column("Name", style="magenta")
             char_table.add_column("Role", style="yellow3")
             char_table.add_column("Age", style="cyan")
@@ -348,7 +373,7 @@ class VideoSpecs:
         # Table of dialogs
         if self.specs["dialogs"]:
             console.print()
-            dialog_table = Table(title="💬 Dialogs", box=box.SIMPLE)
+            dialog_table = Table(title="Dialogs", box=box.SIMPLE)
             dialog_table.add_column("Character", style="magenta")
             dialog_table.add_column("Emotion", style="yellow3")
             dialog_table.add_column("Content", style="white")
@@ -469,7 +494,19 @@ def create(output, format, interactive):
             saved_file_path = output_path
         else:
             console.print("\n" + "=" * console_width)
-            console.print(output_data)
+            syntax_language = {
+                "json": "json",
+                "xml": "xml",
+                "html": "html",
+                "text-blocks": "markdown"
+            }.get(format, "text")
+            highlighted_output = Syntax(
+                output_data,
+                syntax_language,
+                theme="monokai",
+                word_wrap=True
+            )
+            console.print(highlighted_output)
             console.print("=" * console_width)
 
             # Propose to save

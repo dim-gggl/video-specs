@@ -15,7 +15,7 @@ install:
 	uv init
 	uv venv
 	source .venv/bin/activate
-	uv pip install -U click rich rich-click
+	uv pip install -U click rich rich-click markdown-it-py
 	@echo "✓ Installation terminée!"
 
 demo:

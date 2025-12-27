@@ -35,12 +35,4 @@ def from_json(json_data: str) -> Dict[str, Any]:
     if "dialogs" not in specs:
         specs["dialogs"] = []
 
-    # Ensure metadata exists
-    if "metadata" not in specs:
-        from datetime import datetime
-        specs["metadata"] = {
-            "created_at": datetime.now().isoformat(),
-            "tool_version": "1.0.0"
-        }
-
     return specs
